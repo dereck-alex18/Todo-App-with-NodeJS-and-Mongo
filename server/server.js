@@ -9,8 +9,8 @@ app.use(bodyParser.json());
 
 app.get('/todos', (req, res) => {
     let todosArr = [];
-    Todo.find().then((todos) => {
-        res.send({todos});
+    Todo.find().then((items) => {
+        res.send({items});
     })
     .catch((err) => {
         res.status(400).send(err);
