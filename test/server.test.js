@@ -1,11 +1,12 @@
 const expect = require('expect');
 const request = require('supertest');
+const {ObjectID} = require('mongodb');
 const {app} = require('./../server/server');
 const {Todo} = require('./../server/models/todo');
 
-const todos = [{text: 'Todo 1'}, {text: 'Todo 2'}];
+const todos = [{_id: new ObjectID(), text: 'Todo 1'}, {_id: new ObjectID(), text: 'Todo 2'}];
 
-
+console.log(todos[0]._id);
 
 beforeEach((done) => {
     Todo.remove({}).then(() => {
@@ -75,3 +76,31 @@ describe('/GET route todo', () => {
         .end(done);
     });
 });
+
+describe('/GET one todo', () => {
+    it('should return one todo according to the id', (done) => {
+        request(app)
+        .get(`/todos/${todos[0]._id.toHexString()}`)
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.todo.text).toBe(todos[0].text);
+        })
+        .end(done);
+    });
+
+    it('should expect a 404 status if a todo is not found', (done) => {
+        request(app)
+        .get('/todos/5c056f87597c90264753a173')
+        .expect(404)
+        .end(done)
+    });
+
+    it('should expect a 400 status if a non-valid id is passed', (done) => {
+        request(app)
+        .get('/todos/123abc')
+        .expect(400)
+        .end(done)
+    });
+});
+
+
