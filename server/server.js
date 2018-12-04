@@ -39,7 +39,7 @@ app.get('/todos/:id', (req, res) => {
     Todo.findById(req.params.id).then((todo) => {
         
         if(!(ObjectID.isValid(req.params.id))){
-            console.log(123);
+            res.status(404).send();
         }
 
         if(!todo){
@@ -51,6 +51,28 @@ app.get('/todos/:id', (req, res) => {
         console.log(e);
         res.status(400).send('');
     });
+});
+
+
+//This route delete one element by its id
+app.delete('/todos/:id', (req, res) => {
+    
+    
+    Todo.findByIdAndRemove(req.params.id).then((todo) => {
+        
+        if(!(ObjectID.isValid(req.params.id))){
+            return res.status(404).send();
+        }
+        
+        if(todo === null){
+           return res.status(404).send();
+        }
+        
+        res.send({todo});
+    }).catch((e) => {
+        res.status(400).send();
+    });
+
 });
 
 app.listen(port, () => {

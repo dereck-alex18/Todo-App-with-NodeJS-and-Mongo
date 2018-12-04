@@ -6,8 +6,6 @@ const {Todo} = require('./../server/models/todo');
 
 const todos = [{_id: new ObjectID(), text: 'Todo 1'}, {_id: new ObjectID(), text: 'Todo 2'}];
 
-console.log(todos[0]._id);
-
 beforeEach((done) => {
     Todo.remove({}).then(() => {
         return Todo.insertMany(todos);
@@ -26,6 +24,7 @@ describe('/POST route todo', () => {
             expect(res.body).toBeAn('object');
         })
         .end((err, res) => {
+            //Verify if the todo was indeed created
             if(err){
                 return done(err);
             }
@@ -50,6 +49,7 @@ describe('/POST route todo', () => {
         .send({})
         .expect(400)
         .end((err, res) => {
+            //Make sure that the invalid todo was not saved in the DB
             if(err){
                 return done(err);
             }
@@ -100,6 +100,50 @@ describe('/GET one todo', () => {
         .get('/todos/123abc')
         .expect(400)
         .end(done)
+    });
+});
+
+describe('/DELETE one todo', () => {
+    it('should delete one todo according to its id', (done) => {
+        const id = todos[0]._id.toHexString();
+
+        request(app)
+        .delete(`/todos/${id}`)
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.todo.text).toBe(todos[0].text);
+        })
+        .end((err, res) => {
+            if(err){
+                return done(err);
+            }
+            Todo.findById(id).then((todo) => {
+                //Check if the todo was really deleted in DB
+                expect(todo).toNotExist();
+                done();
+            })
+            .catch((e) => {
+                return done(e);
+            });
+        });
+    
+    });
+
+    it('should return a 404 status', (done) => {
+        const id = new ObjectID().toHexString();
+
+        request(app)
+        .delete(`/todos/${id}`)
+        .expect(404)
+        .end(done);
+    });
+
+    it('should return a 404 status', (done) => {
+        
+        request(app)
+        .delete(`/todos/abc123`)
+        .expect(400)
+        .end(done);
     });
 });
 
