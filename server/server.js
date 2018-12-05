@@ -1,3 +1,4 @@
+require('./config/config');
 const mongoose = require('./db/mongoose');
 const {User} = require('./models/user');
 const {Todo} = require('./models/todo');
@@ -8,7 +9,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
-
+//console.log(process.env.DATABASEURL);
 //Fetch all TODOS in the database
 app.get('/todos', (req, res) => {
   
