@@ -9,7 +9,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
-//console.log(process.env.DATABASEURL);
+
 //Fetch all TODOS in the database
 app.get('/todos', (req, res) => {
   
@@ -102,6 +102,31 @@ app.patch('/todos/:id', (req, res) => {
     })
     .catch((e) => {
         res.status(400).send();
+    });
+    
+    
+});
+
+//This route creates a new user
+app.post('/users', (req, res) => {
+    
+    const user = {email: req.body.email, password: req.body.password};
+    let newUser = new User(user);
+
+    newUser.generateAuthToken()
+    .then((result) => {
+        
+        newUser.tokens = newUser.tokens.concat([result]);
+
+        newUser.save()
+        .then((user) => {
+            res.header('x-auth', result.token).send(user);
+        })
+        .catch((e) => {
+            res.status(400).send(e);
+        });
+    }).catch((e) => {
+        res.status(400).send(e);
     });
     
     
