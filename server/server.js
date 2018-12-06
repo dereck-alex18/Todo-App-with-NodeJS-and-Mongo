@@ -132,7 +132,7 @@ app.post('/users', (req, res) => {
     
 });
 
-app.listen(port, () => {
+app.listen(process.env.PORT || 3000, () => {
     console.log(`Server started at port: ${port}`);
 });
 
