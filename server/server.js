@@ -3,6 +3,7 @@ const mongoose = require('./db/mongoose');
 const {User} = require('./models/user');
 const {Todo} = require('./models/todo');
 const {ObjectID} = require('mongodb');
+const {authenticate} = require('./middleware/authenticate');
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
@@ -110,26 +111,35 @@ app.patch('/todos/:id', (req, res) => {
 //This route creates a new user
 app.post('/users', (req, res) => {
     
+    //Get the email and password sent by the user
     const user = {email: req.body.email, password: req.body.password};
     let newUser = new User(user);
 
     newUser.generateAuthToken()
     .then((result) => {
-        
+        //Generate a new token and insert it inside of tokens array in User document   
         newUser.tokens = newUser.tokens.concat([result]);
 
         newUser.save()
+        //Save the user and send the newly created token in the header
         .then((user) => {
             res.header('x-auth', result.token).send(user);
         })
         .catch((e) => {
+        //If there is an error as far as saving 400 will be sent
             res.status(400).send(e);
         });
     }).catch((e) => {
+        //If there is an error as far as creating the token 400 will be sent
         res.status(400).send(e);
     });
-    
-    
+
+});
+
+
+//This route get the user
+app.post('/users/me', authenticate, (req, res) => {
+    res.send(req.user);
 });
 
 app.listen(process.env.PORT || 3000, () => {

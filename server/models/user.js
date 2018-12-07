@@ -35,6 +35,8 @@ let UserSchema = new mongoose.Schema({
         ]
     });
 
+//The method above is responsible for returning only the user's id and email
+//To avoid the user seeing another informations such as the token
 UserSchema.methods.toJSON = function() {
     
     let user = this.toObject()
@@ -42,6 +44,8 @@ UserSchema.methods.toJSON = function() {
     return userObj;
 }
 
+//This method is responsible for creating the token. It returns a promise
+//Where can be accessed in server.js
 UserSchema.methods.generateAuthToken = function() {
     
     return new Promise((resolve, reject) => {
@@ -52,6 +56,26 @@ UserSchema.methods.generateAuthToken = function() {
         
         resolve({token, access});
     });
+}
+
+//This method is responsible for finding an user by its token,
+//If the token is invalid it rejects the promise, otherwise it returns User.findOne which
+//return a promise
+UserSchema.statics.findByToken = function(token) {
+    let User = this;
+    let decoded;
+
+    try{
+        decoded = jwt.verify(token, 'rocking');
+    }catch(e){
+        return Promise.reject(e);
+    }
+   
+    return User.findOne({
+        _id: decoded._id,
+        'tokens.token': token,
+        'tokens.access': 'auth'
+    })
 }
 
 let User = mongoose.model('User', UserSchema);
