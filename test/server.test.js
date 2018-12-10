@@ -3,14 +3,10 @@ const request = require('supertest');
 const {ObjectID} = require('mongodb');
 const {app} = require('./../server/server');
 const {Todo} = require('./../server/models/todo');
+const {populateItems, todos, populateUsers} = require('./seed/seed');
 
-const todos = [{_id: new ObjectID(), text: 'Todo 1', completed: false}, {_id: new ObjectID(), text: 'Todo 2', completed: true}];
-
-beforeEach((done) => {
-    Todo.remove({}).then(() => {
-        return Todo.insertMany(todos);
-    }).then(() => done());
-});
+beforeEach(populateUsers);
+beforeEach(populateItems);
 
 describe('/POST route todo', () => {
     
@@ -150,7 +146,7 @@ describe('/DELETE one todo', () => {
 describe('/PATCH one todo', () => {
     it('should update one todo', (done) => {
         const id = todos[0]._id.toHexString();
-        const text = "updated TODO";
+        const text = "updated TODO2";
         request(app)
         .patch(`/todos/${id}`)
         .send({completed: true, text})

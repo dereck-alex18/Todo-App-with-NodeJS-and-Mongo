@@ -79,16 +79,17 @@ UserSchema.statics.findByToken = function(token) {
     })
 }
 
-UserSchema.pre('save', function(next){
+//This is a middleware that will be executed before the password being saved to the database
+//It checks if the password was modified, if so it will be hashed and saved to db.
+ UserSchema.pre('save', function(next){
     const user = this;
 
     if(user.isModified('password')){
-        
+    //Check if the pass was changed    
         bcrypt.genSalt(10, (err, salt) => {
             bcrypt.hash(user.password, salt, (err, hash) => {
                 user.password = hash;
-                console.log(user.password);
-                next();
+                next(); //next() goes inside of the callback, otherwise the middleware will not be finished
             });
         });
         
