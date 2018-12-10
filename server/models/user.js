@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 let UserSchema = new mongoose.Schema({
         email:{
@@ -35,7 +36,7 @@ let UserSchema = new mongoose.Schema({
         ]
     });
 
-//The method above is responsible for returning only the user's id and email
+//The method bellow is responsible for returning only the user's id and email
 //To avoid the user seeing another informations such as the token
 UserSchema.methods.toJSON = function() {
     
@@ -77,6 +78,24 @@ UserSchema.statics.findByToken = function(token) {
         'tokens.access': 'auth'
     })
 }
+
+UserSchema.pre('save', function(next){
+    const user = this;
+
+    if(user.isModified('password')){
+        
+        bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(user.password, salt, (err, hash) => {
+                user.password = hash;
+                console.log(user.password);
+                next();
+            });
+        });
+        
+    }else{
+        next();
+    }
+});
 
 let User = mongoose.model('User', UserSchema);
 

@@ -59,7 +59,6 @@ app.get('/todos/:id', (req, res) => {
 //This route delete one element by its id
 app.delete('/todos/:id', (req, res) => {
     
-    
     Todo.findByIdAndRemove(req.params.id).then((todo) => {
         
         if(!(ObjectID.isValid(req.params.id))){
@@ -138,7 +137,7 @@ app.post('/users', (req, res) => {
 
 
 //This route get the user
-app.post('/users/me', authenticate, (req, res) => {
+app.get('/users/me', authenticate, (req, res) => {
     res.send(req.user);
 });
 
