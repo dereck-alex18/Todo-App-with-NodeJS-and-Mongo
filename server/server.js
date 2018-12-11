@@ -151,10 +151,13 @@ app.post('/users/login', (req, res) => {
     User.findByCredentials(email, password).then((user) => {
         //Create a new token for the user and send it
         user.generateAuthToken().then((result) => {
+            //add the newly created token to tokens array in the User document
             user.tokens =  user.tokens.concat([result]);
+            //Save the new token
             user.save().then((user) => { 
-               res.header('x-auth', result.token).send(user);
-                res.status(400).send();
+                //Send the token and the user itself
+                res.header('x-auth', result.token).send(user);
+                
             })
             .catch((e) => {
                 res.status(400).send();

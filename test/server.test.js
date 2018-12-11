@@ -251,4 +251,50 @@ describe('/POST users', () => {
     });
 });
 
+describe('/POST users login', () => {
+    it('should return the founds user token and check if the user was indeed saved', (done) => {
+        request(app)
+        .post('/users/login')
+        .send({
+            email: users[0].email,
+            password: users[0].password 
+        })
+        .expect(200)
+        .expect((res) => {
+            expect(res.header['x-auth']).toExist();
+            expect(res.body._id).toBe(users[0]._id.toHexString());    
+        })
+        .end((err, res) => {
+            if(err){
+                return done(e);
+            }
+            User.findById(users[0]._id).then((user) => {
+                expect(user.tokens[1]).toInclude({access: 'auth', token: res.header['x-auth']})
+                done()
+            })
+            .catch((e) => done(e));
+        });
+    });
+
+    it('should return an error and no token', (done) => {
+        request(app)
+        .post('/users/login')
+        .send({email: 'dereck@outlook.com', password: '123456'})
+        .expect(400)
+        .expect((res) => {
+            expect(res.header['x-auth']).toNotExist();
+        })
+        .end((err, res) => {
+            if(err){
+                return done(err);
+            }
+            User.findById(users[0]._id).then((user) => {
+                expect(users[0].tokens.length).toBe(1);
+                done()
+            })
+            .catch((e) => done(e));
+        })
+    });
+});
+
 
