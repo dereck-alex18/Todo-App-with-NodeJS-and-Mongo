@@ -3,7 +3,8 @@ const request = require('supertest');
 const {ObjectID} = require('mongodb');
 const {app} = require('./../server/server');
 const {Todo} = require('./../server/models/todo');
-const {populateItems, todos, populateUsers} = require('./seed/seed');
+const {User} = require('./../server/models/user');
+const {populateItems, todos, populateUsers, users} = require('./seed/seed');
 
 beforeEach(populateUsers);
 beforeEach(populateItems);
@@ -172,6 +173,81 @@ describe('/PATCH one todo', () => {
             expect(res.body.body.completedAt).toBe(null);
         })
         .end(done);
+    });
+});
+
+describe('/GET users/me', () => {
+    it('should return an auth user', (done) => {
+        request(app)
+        .get('/users/me')
+        .set('x-auth', users[0].tokens[0].token)
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.user._id).toBe(users[0]._id.toHexString());
+            expect(res.body.user.email).toBe(users[0].email);
+        })
+        .end(done);
+    });
+
+    it('should return an empty object', (done) => {
+        request(app)
+        .get('/users/me')
+        .expect(401)
+        .expect((res) => {
+            expect(res.body).toEqual({});
+        })
+        .end(done);
+
+    });
+});
+
+describe('/POST users', () => {
+    it('should create a valid user', (done) => {
+        let email = "test@example.com";
+        let password = "123abc"; 
+        request(app)
+        .post('/users')
+        .send({email, password})
+        .expect(200)
+        .expect((res) => {
+            expect(res.header['x-auth']).toExist();
+            expect(res.body._id).toExist();
+            expect(res.body.email).toBe(email);
+        })
+        .end((err, res) => {
+            if(err){
+                return done(e);
+            }
+            User.findOne({email}).then((res) => {
+                expect(res.email).toBe(email);
+                expect(res.password).toNotBe(password);
+                done();
+            })
+            .catch((e) => {
+                done(e);
+            });
+        });
+    });
+
+    it('should return a validation error by creating a user with invalid credentials', (done) => {
+        let email = "blabla"
+        let password = "1233";
+        request(app)
+        .post('/users')
+        .send({email, password})
+        .expect(400)
+        .end(done)
+    
+    })
+
+    it('should return a validation error by creating an user with an in-use email', (done) => {
+        let email = "userone@gmail.com"
+        let password = "123456";
+        request(app)
+        .post('/users')
+        .send({email, password})
+        .expect(400)
+        .end(done)
     });
 });
 

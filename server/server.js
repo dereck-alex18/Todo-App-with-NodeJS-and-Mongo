@@ -138,7 +138,8 @@ app.post('/users', (req, res) => {
 
 //This route get the user
 app.get('/users/me', authenticate, (req, res) => {
-    res.send(req.user);
+    const user = req.user;
+    res.send({user});
 });
 
 app.listen(process.env.PORT || 3000, () => {

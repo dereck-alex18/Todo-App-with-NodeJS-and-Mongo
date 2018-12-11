@@ -16,7 +16,7 @@ let authenticate = (req, res, next) => {
         next();
     }).catch((e) => {
         //In case of error, send 401 status which is unauthorized
-        res.status(401).send(e);
+        res.status(401).send();
     });
 };
 
