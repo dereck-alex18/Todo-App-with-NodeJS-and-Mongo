@@ -79,6 +79,30 @@ UserSchema.statics.findByToken = function(token) {
     })
 }
 
+UserSchema.statics.findByCredentials = function(email, password){
+    const User = this;
+    
+    return User.findOne({email}).then((user) => {
+        
+        if(!user){
+            return Promise.reject()
+        }
+        return new Promise((resolve, reject) => {
+            
+            bcrypt.compare(password, user.password, (err, res) => {
+                if(err){
+                    reject(err);
+                }
+                if(res){
+                   resolve(user);
+                }else{
+                    reject();
+                }
+            })
+         });
+    });
+}
+
 //This is a middleware that will be executed before the password being saved to the database
 //It checks if the password was modified, if so it will be hashed and saved to db.
  UserSchema.pre('save', function(next){

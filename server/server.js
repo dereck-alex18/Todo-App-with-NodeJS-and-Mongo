@@ -8,6 +8,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const port = process.env.PORT || 3000;
+const bcrypt = require('bcryptjs');
 
 app.use(bodyParser.json());
 
@@ -140,6 +141,32 @@ app.post('/users', (req, res) => {
 app.get('/users/me', authenticate, (req, res) => {
     const user = req.user;
     res.send({user});
+});
+
+//This route is responsible for logging in an user
+app.post('/users/login', (req, res) => {
+    let email = req.body.email;
+    let password = req.body.password;
+    //Find the user by its credentials
+    User.findByCredentials(email, password).then((user) => {
+        //Create a new token for the user and send it
+        user.generateAuthToken().then((result) => {
+            user.tokens =  user.tokens.concat([result]);
+            user.save().then((user) => { 
+               res.header('x-auth', result.token).send(user);
+                res.status(400).send();
+            })
+            .catch((e) => {
+                res.status(400).send();
+            });
+        })
+        .catch((e) => {
+            res.status(400).send();
+        })
+    })
+    .catch((e) => {
+        res.status(400).send();
+    });
 });
 
 app.listen(process.env.PORT || 3000, () => {
