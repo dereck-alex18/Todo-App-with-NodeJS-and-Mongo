@@ -45,6 +45,19 @@ UserSchema.methods.toJSON = function() {
     return userObj;
 }
 
+UserSchema.methods.removeToken = function(token){
+    const user = this;
+//Remove the token from the tokens array
+//It returns a promise that will be handled in server.js
+   return user.update({
+        $pull: { 
+            tokens:{
+                token
+            }
+        }
+    });
+};
+
 //This method is responsible for creating the token. It returns a promise
 //Where can be accessed in server.js
 UserSchema.methods.generateAuthToken = function() {
@@ -79,14 +92,18 @@ UserSchema.statics.findByToken = function(token) {
     })
 }
 
+//This method find an user by its credentials and return a promise
 UserSchema.statics.findByCredentials = function(email, password){
     const User = this;
     
     return User.findOne({email}).then((user) => {
-        
+        //If there is no user it rejects the promise
         if(!user){
             return Promise.reject()
         }
+        //Otherwise it returns a new promise cheking if the password sent by the user
+        //is the same as the one on database. If so, the promise will be resolved
+        //The promise is handled in server.js
         return new Promise((resolve, reject) => {
             
             bcrypt.compare(password, user.password, (err, res) => {

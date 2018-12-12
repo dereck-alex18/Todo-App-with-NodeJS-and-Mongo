@@ -172,6 +172,19 @@ app.post('/users/login', (req, res) => {
     });
 });
 
+//This route is responsible for deleting the current used token
+app.delete('/users/me/token', authenticate, (req, res) => {
+    //The middleware check if the user is logged in
+    req.user.removeToken(req.token).then(() => {
+        //if so, the token is removed
+        res.status(200).send();
+    })
+    .catch(() => {
+        res.status(401).send();
+    })
+});
+
+
 app.listen(process.env.PORT || 3000, () => {
     console.log(`Server started at port: ${port}`);
 });
