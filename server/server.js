@@ -13,9 +13,9 @@ const bcrypt = require('bcryptjs');
 app.use(bodyParser.json());
 
 //Fetch all TODOS in the database
-app.get('/todos', (req, res) => {
+app.get('/todos', authenticate, (req, res) => {
   
-    Todo.find().then((items) => {
+    Todo.find({_creator: req.user.id}).then((items) => {
         res.send({items});
     })
     .catch((err) => {
@@ -25,9 +25,10 @@ app.get('/todos', (req, res) => {
 
 
 //This route handles creating a new to todo and save it in the database
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
     let newTodo = new Todo({
-        text: req.body.text
+        text: req.body.text,
+        _creator: req.user.id
     });
     newTodo.save().then((result) => {
         res.send(result);
@@ -38,8 +39,8 @@ app.post('/todos', (req, res) => {
 });
 
 //This route get only one todo according to the id passed in the url
-app.get('/todos/:id', (req, res) => {
-    Todo.findById(req.params.id).then((todo) => {
+app.get('/todos/:id', authenticate, (req, res) => {
+    Todo.findOne({_id: req.params.id, _creator: req.user.id}).then((todo) => {
         
         if(!(ObjectID.isValid(req.params.id))){
             res.status(404).send();
@@ -58,9 +59,9 @@ app.get('/todos/:id', (req, res) => {
 
 
 //This route delete one element by its id
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
     
-    Todo.findByIdAndRemove(req.params.id).then((todo) => {
+    Todo.findOneAndRemove({_id: req.params.id, _creator: req.user.id}).then((todo) => {
         
         if(!(ObjectID.isValid(req.params.id))){
             return res.status(404).send();
@@ -78,9 +79,9 @@ app.delete('/todos/:id', (req, res) => {
 });
 
 //This route deal with updating a todo
-app.patch('/todos/:id', (req, res) => {
+app.patch('/todos/:id', authenticate, (req, res) => {
     const body = {text: req.body.text, completed: req.body.completed};
-    const id = req.params.id;
+    const _id = req.params.id;
 
     if(typeof body.completed === "boolean" && body.completed){
         body.completedAt = new Date().getTime();
@@ -89,7 +90,7 @@ app.patch('/todos/:id', (req, res) => {
         body.completedAt = null;
     }
 
-    Todo.findByIdAndUpdate(id, {$set: body}, {$new: true})
+    Todo.findOneAndUpdate({_id, _creator: req.user.id}, {$set: body}, {$new: true})
     .then((todo) => {
         if(!(ObjectID.isValid(req.params.id))){
             return res.status(404).send();

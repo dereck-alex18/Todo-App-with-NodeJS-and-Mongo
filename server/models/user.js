@@ -81,6 +81,7 @@ UserSchema.statics.findByToken = function(token) {
 
     try{
         decoded = jwt.verify(token, 'rocking');
+        
     }catch(e){
         return Promise.reject(e);
     }
