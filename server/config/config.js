@@ -1,9 +1,19 @@
-const env = process.env.NODE_ENV || 'development';
+//This file will set all the environment variables the db url, the port as well as tje JWT secret
 
-if(env === 'development'){
-    process.env.PORT = 3000;
-    process.env.DATABASEURL = 'mongodb://localhost:27017/TodoApp';
-}else if(env === "test"){
-    process.env.PORT = 3000;
-    process.env.DATABASEURL = 'mongodb://localhost:27017/TodoAppTest';
+const env = process.env.NODE_ENV || 'development';
+const config = require('./config.json');
+
+if(env === 'development' || env === 'test'){
+    //Setting the environment variables
+    let configEnv =  config[env]; //configEnv depends on the env value
+    //Object.keys converts the keys of an object into an array
+    Object.keys(configEnv).forEach((key) => {
+        //Creates the environment variables from config.json
+        process.env[key] = configEnv[key];
+       
+    })
+    
+    // process.env.PORT = config[env].PORT;
+    // process.env.DATABASEURL = config[env].DATABASEURL;
 }
+

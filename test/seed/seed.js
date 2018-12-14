@@ -19,7 +19,7 @@ const users = [
         password: '123abc!',
         tokens: [{
            access: 'auth',
-           token: jwt.sign({_id: userOneId.toHexString(), access: 'auth'}, 'rocking').toString()
+           token: jwt.sign({_id: userOneId.toHexString(), access: 'auth'}, process.env.JWT_SECRET).toString()
         }]
     },
 
@@ -29,7 +29,7 @@ const users = [
         password: 'abc123!',
         tokens: [{
             access: 'auth',
-            token: jwt.sign({_id: userTwoId.toHexString(), access: 'auth'}, 'rocking').toString()
+            token: jwt.sign({_id: userTwoId.toHexString(), access: 'auth'}, process.env.JWT_SECRET).toString()
          }] 
     }
 ]
